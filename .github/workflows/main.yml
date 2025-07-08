@@ -1,0 +1,38 @@
+name: Minecraft Plugin CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: 17
+        cache: 'gradle'  # Cache tự động cho Gradle 9.0+
+
+    - name: Make gradlew executable
+      run: chmod +x gradlew
+
+    - name: Build with Gradle 9.0
+      run: ./gradlew clean build shadowJar --no-daemon
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: plugin-jar
+        path: build/libs/*.jar
+        if-no-files-found: error
+        retention-days: 3
